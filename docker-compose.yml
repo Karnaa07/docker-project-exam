@@ -1,0 +1,110 @@
+version: '3'
+services:
+  
+  #PHP Service app 1
+  app1:
+    build: ./app1
+    container_name: app1
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app1
+      SERVICE_TAGS: dev
+    working_dir: /var/www
+    volumes:
+      - ./app1/:/var/www
+      - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - app-network
+    depends_on:
+      - webserver1
+
+        #PHP Service app 2
+  app2:
+    build: ./app2
+    container_name: app2
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app2
+      SERVICE_TAGS: dev
+    working_dir: /var/www
+    volumes:
+      - ./app2/:/var/www
+      - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - app2-network
+    depends_on:
+      - webserver2
+
+        #Nginx Service app 1
+  webserver1:
+    image: nginx:alpine
+    container_name: webserver1
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "8003:80"
+    volumes:
+      - ./app1/:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - app-network
+    depends_on:
+      - db
+
+        #Nginx Service app 2
+  webserver2:
+    image: nginx:alpine
+    container_name: webserver2
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "8004:80"
+    volumes:
+      - ./app2/:/var/www
+      - ./nginx2/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - app2-network
+    depends_on:
+      - db
+
+        #MySQL Service app 1 and app 2
+  db:
+    image: mysql:5.7
+    container_name: db
+    ports :
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: db-docker
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: user
+      MYSQL_PASSWORD: root
+    env_file:
+      - ./.env
+    volumes:
+      - ./db_data:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/mysql/my.cnf
+    restart: always
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin-cms-scq
+    depends_on:
+      - db
+    ports:
+      - 8888:80
+    environment:
+        - PMA_ARBITRARY=1
+      
+
+#Docker Networks
+networks:
+  app-network:
+    driver: bridge
+  app2-network:
+    driver: bridge
+#Volumes
+volumes:
+  dbdata:
+    driver: local
