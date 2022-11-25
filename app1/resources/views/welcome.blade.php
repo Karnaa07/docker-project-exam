@@ -119,6 +119,7 @@
                             <a href="https://github.com/sponsors/taylorotwell" class="ml-1 underline">
                                 Sponsor
                             </a>
+                            <a href="http://localhost:8004/" class="ml-1 underline">Serveur 2 </a>
                         </div>
                     </div>
 
